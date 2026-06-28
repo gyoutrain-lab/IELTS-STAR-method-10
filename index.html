@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Global Consultant: Band 9 Audit Engine</title>
+    <title>Global Consultant: Mastery Audit Engine</title>
     <style>
         body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; padding: 20px; }
         .app-container { max-width: 850px; margin: auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
@@ -11,6 +11,7 @@
         textarea { width: 100%; height: 60px; border: 1px solid #ccc; padding: 10px; }
         .controls { display: flex; gap: 10px; margin-top: 20px; }
         button { padding: 10px 15px; cursor: pointer; background: #2c3e50; color: white; border: none; }
+        .mic-btn { background: #e74c3c; color: white; }
         #review { margin-top: 20px; padding: 15px; border: 1px solid #ddd; display: none; background: #fff; }
     </style>
 </head>
@@ -23,21 +24,25 @@
         <label>Scene (Nominalization):</label>
         <span class="placeholder-text" id="p-sit"></span>
         <textarea id="sit"></textarea>
+        <button class="mic-btn" onclick="startDictation('sit')">🎤 Voice</button>
     </div>
     <div class="input-group">
         <label>Challenge (Complex Conjunction):</label>
         <span class="placeholder-text" id="p-task"></span>
         <textarea id="task"></textarea>
+        <button class="mic-btn" onclick="startDictation('task')">🎤 Voice</button>
     </div>
     <div class="input-group">
         <label>Action (Past Progressive + Inversion):</label>
         <span class="placeholder-text" id="p-act"></span>
         <textarea id="act"></textarea>
+        <button class="mic-btn" onclick="startDictation('act')">🎤 Voice</button>
     </div>
     <div class="input-group">
         <label>Impact (Academic Hedging):</label>
         <span class="placeholder-text" id="p-res"></span>
         <textarea id="res"></textarea>
+        <button class="mic-btn" onclick="startDictation('res')">🎤 Voice</button>
     </div>
 
     <div class="controls">
@@ -50,38 +55,28 @@
 
 <script>
     const levels = [
-        { t: "Teaching & Inventing", s: "The pedagogical innovation of my teaching methodology integrates creative invention and...", t: "Notwithstanding the inherent complexity of instructional design and concept testing...", a: "While I was developing my unique teaching tools, never had I observed such...", r: "It would be more prudent to conclude that this fosters cognitive advancement and...", desc: "This competency evaluates your ability to bridge theoretical knowledge with practical, creative applications in an academic setting." },
-        { t: "Working in Australia", s: "The professional clinical landscape in Australia emphasizes evidence-based standards and...", t: "Given the systematic complexity of healthcare delivery and multidisciplinary coordination...", a: "While I was integrating into the Australian workforce, never had I witnessed such...", r: "It would be more substantiated to conclude that this fosters global competency and...", desc: "This competency measures your capacity to adapt to high-standard professional environments while maintaining clinical excellence." },
-        { t: "Why I like working in Australia", s: "The appeal of the Australian professional environment stems from its inclusive culture and...", t: "Considering the significant complexity of work-life balance and high-standard practice...", a: "While I was navigating my career goals, never had I felt more...", r: "It would be more plausible to conclude that this fosters long-term career satisfaction and...", desc: "This section tests your ability to express personal motivation backed by professional observations." },
-        { t: "Compliance Job", s: "The rigorous application of regulatory compliance mandates systemic operational safety and...", t: "Notwithstanding the operational complexity of institutional audits and policy enforcement...", a: "While I was overseeing clinical compliance, never had I prioritized...", r: "It would be more prudent to conclude that this fosters organizational integrity and...", desc: "This focuses on your command of technical language related to risk, policy, and systemic accountability." },
-        // ... [Remaining levels follow the exact same object structure]
+        { t: "Teaching & Inventing", s: "The pedagogical innovation of nursing education materials involves high-level conceptual design and...", t: "Notwithstanding the intricate complexity of intellectual property and curriculum development...", a: "While I was creating original teaching modules, never had I observed such...", r: "It would be more prudent to conclude that this fosters cognitive acquisition and...", full: "The pedagogical innovation of nursing education materials involves high-level conceptual design and iterative refinement. Notwithstanding the intricate complexity of intellectual property and curriculum development, I successfully launched a new framework. While I was creating original teaching modules, never had I observed such profound student engagement. It would be more prudent to conclude that this fosters cognitive acquisition and long-term professional development." },
+        { t: "Working in Australia", s: "The professional clinical landscape in Australia emphasizes evidence-based standards and...", t: "Given the systematic complexity of healthcare delivery and multidisciplinary coordination...", a: "While I was integrating into the Australian workforce, never had I witnessed such...", r: "It would be more substantiated to conclude that this fosters global competency and...", full: "The professional clinical landscape in Australia emphasizes evidence-based standards and high-quality patient outcomes. Given the systematic complexity of healthcare delivery and multidisciplinary coordination, I adapted rapidly. While I was integrating into the Australian workforce, never had I witnessed such collaborative synergy. It would be more substantiated to conclude that this fosters global competency and advanced clinical practice." },
+        // ... [Add remaining 12 competencies following this pattern]
     ];
 
     let current = 0;
+    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    let activeField = '';
+
+    function startDictation(id) { activeField = id; recognition.start(); }
+    recognition.onresult = (e) => { document.getElementById(activeField).value = e.results[0][0].transcript; };
 
     function evaluateDrill() {
-        const vals = ['sit', 'task', 'act', 'res'].map(id => document.getElementById(id).value.trim());
-        if (vals.some(v => v === "")) {
-            alert("Please fill all segments.");
-            return;
-        }
-
-        const modelAnswer = levels[current].s + " " + levels[current].t + " " + levels[current].a + " " + levels[current].r;
-        
+        const fullAudit = levels[current].full;
         let html = `<h3>Competency Audit: ${levels[current].t}</h3>
-                    <p><strong>Description:</strong> ${levels[current].desc}</p>
-                    <p><strong>Estimated Band: 9.0/9</strong></p>
-                    <p><strong>Model Comparison (Band 9):</strong> <em>${modelAnswer}</em></p>
-                    <button onclick="speakModel()">🔊 Compare/Listen to Model</button>`;
-        
+                    <p><strong>Professional Full Description (Band 9):</strong><br>${fullAudit}</p>
+                    <button onclick="speakModel()">🔊 Listen to Full Description</button>`;
         document.getElementById('review').innerHTML = html;
         document.getElementById('review').style.display = 'block';
     }
 
-    function speakModel() {
-        const model = levels[current].s + levels[current].t + levels[current].a + levels[current].r;
-        window.speechSynthesis.speak(new SpeechSynthesisUtterance(model));
-    }
+    function speakModel() { window.speechSynthesis.speak(new SpeechSynthesisUtterance(levels[current].full)); }
 
     function nextLevel() {
         current = (current + 1) % levels.length;
